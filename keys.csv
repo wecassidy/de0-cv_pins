@@ -1,0 +1,6 @@
+# Signal name, FPGA pin, note
+KEY0,PIN_U7
+KEY1,PIN_W9
+KEY2,PIN_M7
+KEY3,PIN_M6
+RESET_N,PIN_P22,PB connected to DEV_CLRN Pin of FPGA
