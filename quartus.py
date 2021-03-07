@@ -7,9 +7,7 @@ map_template = "set_location_assignment {pin} -to {node}"
 
 def dumps(mapping):
     return "\n".join(
-        map_template.format(pin=mapping[group][node], node=node)
-        for group, nodes in mapping.items()
-        for node, pin in nodes.items()
+        map_template.format(pin=pin, node=node) for node, pin in mapping.items()
     )
 
 
