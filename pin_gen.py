@@ -9,12 +9,9 @@ import csv
 
 
 # Load pin dicts
-groups = ("clock", "hex", "keys", "led", "switches", "other")
+groups = ("clock", "hex", "keys", "led", "switches")
 pins = dict()
 for group in groups:
-    if group == "other":  # Other group is for unsupported names
-        continue
-
     pins[group] = dict()
     with open(f"{group}.csv", newline="") as f:
         reader = csv.reader(f)
@@ -34,12 +31,13 @@ class AssignLoop(cmd.Cmd):
         super().__init__(*args, **kwargs)
         self.groups = groups
         self.mapping = {group: dict() for group in self.groups}
+        self.mapping["other"] = dict()
 
     def choose_group(self):
         letters = {g[0]: g for g in self.groups}
         letters_help = "".join(letters.keys())
         while True:
-            group = input(f"Group [{letters_help}?]: ")[0].lower()
+            group = input(f"Group [{letters_help}o?]: ")[0].lower()
             if group == "?":
                 print(
                     """Enter the first letter of a pin group. Groups are:
@@ -50,6 +48,8 @@ class AssignLoop(cmd.Cmd):
  switches: slide switches
  other:    pins without special support"""
                 )
+            elif group == "o":
+                return "other"
             elif group in letters:
                 return letters[group]
 
@@ -72,10 +72,19 @@ class AssignLoop(cmd.Cmd):
             node = input("Node: ")
             group = self.choose_group()
             pin = None
-            while pin not in pins[group]:
-                pin = input("Pin [?]: ")
-                if pin == "?":
-                    print(f"Pins in {group}: {', '.join(pins[group].keys())}")
+            if group != "other":
+                while pin not in pins[group]:
+                    pin = input("Pin [?]: ")
+                    if pin == "?":
+                        print(f"Pins in {group}: {', '.join(pins[group].keys())}")
+            else:
+                while pin is None:
+                    pin = input("Pin [?]: ")
+                    if pin == "?":
+                        print(
+                            "Any pin number on the FPGA (caution: not checked for validity)"
+                        )
+                        pin = None
 
             self.mapping[group][node] = pin
 
