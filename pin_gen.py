@@ -63,8 +63,10 @@ def range_inclusive(start, stop):
         return range(start, stop - 1, -1)
 
 
-def warn(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
+def warn(message, strict, *args, **kwargs):
+    print(message, *args, file=sys.stderr, **kwargs)
+    if strict:
+        sys.exit(1)
 
 
 # Load pin dicts
@@ -93,7 +95,8 @@ skipped with a printed error message.
 
 Any command line flag can alternatively be given in the "options"
 section using the long name. If both are used, command line flags take
-precedence.
+precedence. Boolean options are given as option = True/False.
+
 
 Buses
 -----
@@ -126,12 +129,16 @@ the valid pins are kept.
         help="Output file. Will be clobbered if it exists. If absent, print to stdout "
         "or output specified by in_file.",
     )
+    parser.add_argument(
+        "-s", "--strict", action="store_true", help="Escalate warnings to errors"
+    )
     args = parser.parse_args()
 
     # Load mapping file
     mapper = configparser.ConfigParser()
     mapper.read(args.in_file)
     mapping = mapper["mapping"]
+    strict = args.strict or mapper.getboolean("options", "strict", fallback=False)
 
     # Expand buses
     for node, pin in mapping.items():
@@ -142,7 +149,7 @@ the valid pins are kept.
                 for node_i, pin_i in expanded:
                     mapping[node_i] = pin_i
         except ValueError as ve:
-            warn(ve)
+            warn(ve, strict)
 
     # Handle invalid mappings and expand buses
     for node, pin in mapping.items():
@@ -151,7 +158,7 @@ the valid pins are kept.
         if pin in pins:
             mapping[node] = pins[pin]
         elif not is_pin_name(pin):
-            warn(f"Skipping invalid pin name: {pin}")
+            warn(f"Skipping invalid pin name: {pin}", strict)
             del mapping[node]
 
     out_file = mapper["options"].get("output", None)
