@@ -14,6 +14,40 @@ def yn(prompt):
     return len(yn) > 0 and yn[0].lower() == "y"
 
 
+def yesno(prompt):
+    """Prompt a yes/no question with strict input."""
+    yn = None
+    while yn != "yes" and yn != "no":
+        if yn is not None:
+            print("Please enter yes or no.")
+        yn = input(f"{prompt} [yes/no]? ").lower()
+
+    return yn == "yes"
+
+
+def pick_one(options, prompt, help=None, help_char="?"):
+    """
+    Pick exactly one from several single-character options, with
+    optional help string.
+    """
+    if help is not None:
+        if help_char in options:
+            raise ValueError(f"{help_char} is both help and option")
+        options += help_char
+
+    full_prompt = f"{prompt} [{options}]: "
+    while True:
+        choice = input(full_prompt)
+        if len(choice) == 0:
+            continue
+        choice = choice[0].lower()
+
+        if help is not None and choice == help_char:
+            print(help)
+        elif choice in options:
+            return choice
+
+
 # Load pin dicts
 groups = ("clock", "hex", "keys", "led", "switches")
 pins = dict()
