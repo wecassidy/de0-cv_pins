@@ -61,6 +61,11 @@ class AssignLoop(cmd.Cmd):
                     print(f"{node:>15}  →  {pin}")
                 print()
 
+    def assignment_for(self, node):
+        for group in self.mapping.values():
+            if node in group:
+                return group[node]
+
     def do_list(self, _):
         """Print current assignments."""
         self.list_assignments()
@@ -70,6 +75,15 @@ class AssignLoop(cmd.Cmd):
         args = arg.split()
         if len(args) == 0:
             node = input("Node: ")
+
+            pre_assignment = self.assignment_for(node)
+            if pre_assignment is not None:
+                overwrite = input(
+                    f"{node} is already assigned to {pre_assignment}. Overwrite [y/N]? "
+                )
+                if len(overwrite) == 0 or overwrite[0].lower() != "y":
+                    return
+
             group = self.choose_group()
             pin = None
             if group != "other":
