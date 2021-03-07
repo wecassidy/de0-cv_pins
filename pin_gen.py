@@ -69,9 +69,60 @@ pins_cfg.read("pin_map.ini")
 pins = pins_cfg["pins"]
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Example input file:
+
+    [mapping]
+    node = LEDR0
+    switch = PIN_AA12
+    display[0..6] = HEX3[0..6]
+
+    [options]
+    output = pins.qsf
+
+Pin assignments go in the "mapping" section as node_name =
+pin_name. The pin name can be a standard names used in the DE0-CV
+manual or a direct pin location. Pin names that aren't recognized are
+skipped with a printed error message.
+
+Any command line flag can alternatively be given in the "options"
+section using the long name. If both are used, command line flags take
+precedence.
+
+Buses
+-----
+
+Buses, written like abc[start..stop]def, are
+expanded to a series of individual pin assignments. If the node and
+pin buses have different sizes, the assignment is skipped with a
+printed error message.
+
+Start and stop must both be non-negative integers. The range is
+inclusive; if stop > start then the assignment counts down.
+
+Node buses are expanded WITH the square brackets (to match Quartus'
+convention) but pin buses are expanded WITHOUT the square brackets (to
+match the DE0-CV pin names). For example, number[0..2] = SW[2..0] will
+be expanded to:
+
+    number[0] = SW2
+    number[1] = SW1
+    number[2] = SW0
+
+If expanding a pin bus leads to some valid pins and some invalid pins,
+the valid pins are kept.
+
+""",
+    )
     parser.add_argument("in_file", help="Input file (see below for format notes)")
-    parser.add_argument("out_file", help="Output file. Will be clobbered if it exists.")
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Output file. Will be clobbered if it exists. If absent, print to stdout "
+        "or output specified by in_file.",
+    )
     args = parser.parse_args()
 
     # Load mapping file
