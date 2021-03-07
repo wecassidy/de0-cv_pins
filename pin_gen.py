@@ -8,6 +8,12 @@ import cmd
 import csv
 
 
+def yn(prompt):
+    """Prompt a yes/no question, default no. Return True for yes."""
+    yn = input(f"{prompt} [y/N]? ")
+    return len(yn) > 0 and yn[0].lower() == "y"
+
+
 # Load pin dicts
 groups = ("clock", "hex", "keys", "led", "switches")
 pins = dict()
@@ -78,10 +84,7 @@ class AssignLoop(cmd.Cmd):
 
             pre_assignment = self.assignment_for(node)
             if pre_assignment is not None:
-                overwrite = input(
-                    f"{node} is already assigned to {pre_assignment}. Overwrite [y/N]? "
-                )
-                if len(overwrite) == 0 or overwrite[0].lower() != "y":
+                if not yn(f"{node} is already assigned to {pre_assignment}. Overwrite"):
                     return
 
             group = self.choose_group()
@@ -99,8 +102,22 @@ class AssignLoop(cmd.Cmd):
                             "Any pin number on the FPGA (caution: not checked for validity)"
                         )
                         pin = None
+        elif len(args) == 2:
+            node, pin = args
+            for group in self.groups:
+                if pin in pins[group]:
+                    group = group
+                    break
+            else:
+                if yn(f"{pin} is not a recognized pin name. Continue"):
+                    group = "other"
+                else:
+                    return
+        else:
+            print(f"Error: expected 0 or 2 arguments, got {len(args)}.")
+            return
 
-            self.mapping[group][node] = pin
+        self.mapping[group][node] = pin
 
 
 if __name__ == "__main__":
