@@ -30,6 +30,11 @@ set_location_assignment PIN_V18 -to display[5]
 set_location_assignment PIN_V19 -to display[6]
 ```
 
+To use the generated file in your Quartus project, add the line
+`source pins.qsf` to the project's top level settings file, probably
+named `projectname.qsf` ([Quartus
+documentation](https://www.intel.com/content/www/us/en/programmable/quartushelp/17.0/reference/glossary/def_qsf.htm)).
+
 ## Command line syntax
 ```
 $ python pin_gen.py --help
