@@ -163,11 +163,12 @@ class AssignLoop(cmd.Cmd):
 
         return node, group, pin
 
-    def do_quit(self, _):
+    def do_quit(self, file):
         """Save pin assignments and quit."""
-        file = quartus.pick_qsf("Save mappings")
         if file == "":
-            return
+            file = quartus.pick_qsf("Save mappings")
+            if file == "":
+                return
         if os.path.exists(file):
             mode = pick_one("awc", "File exists ", help="Append, overWrite, or Cancel")
             if mode == "c":
