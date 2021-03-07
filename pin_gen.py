@@ -6,6 +6,7 @@ Generate a Quartus settings file to map FPGA pins for the Altera DE0-CV.
 
 import argparse
 import configparser
+import os
 import re
 import sys
 
@@ -69,10 +70,18 @@ def warn(message, strict, *args, **kwargs):
         sys.exit(1)
 
 
+# Switch working dir to script location to load pin map
+cwd = os.getcwd()
+script_cwd = os.path.dirname(os.path.realpath(__file__))
+os.chdir(script_cwd)
+
 # Load pin dicts
 pins_cfg = configparser.ConfigParser()
 pins_cfg.read("pin_map.ini")
 pins = pins_cfg["pins"]
+
+# Switch back to original working directory
+os.chdir(cwd)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
