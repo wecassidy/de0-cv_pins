@@ -17,10 +17,32 @@ def list_assignments(mapping):
             print()
 
 
+def choose_group(groups):
+    letters = {g[0]: g for g in groups}
+    letters_help = "".join(letters.keys())
+    while True:
+        group = input(f"Group [{letters_help}?]: ")[0].lower()
+        if group == "?":
+            print(
+                """Enter the first letter of a pin group. Groups are:
+ clock:    50MHz built-in clock
+ hex:      7-segment displays (common anode)
+ keys:     pushbuttons (active low)
+ led:      red LEDs (active high)
+ switches: slide switches
+ other:    pins without special support """
+            )
+        elif group in letters:
+            return letters[group]
+
+
 # Load pin dicts
-groups = ("clock", "hex", "keys", "led", "switches")
+groups = ("clock", "hex", "keys", "led", "switches", "other")
 pins = dict()
 for group in groups:
+    if group == "other":  # Other group is for unsupported names
+        continue
+
     pins[group] = dict()
     with open(f"{group}.csv", newline="") as f:
         reader = csv.reader(f)
@@ -40,6 +62,20 @@ class AssignLoop(cmd.Cmd):
     def do_list(self, _):
         """Print current assignments."""
         list_assignments(self.mapping)
+
+    def do_map(self, arg):
+        """Map a node to an FPGA pin."""
+        args = arg.split()
+        if len(args) == 0:
+            node = input("Node: ")
+            group = choose_group(groups)
+            pin = None
+            while pin not in pins[group]:
+                pin = input("Pin [?]: ")
+                if pin == "?":
+                    print(f"Pins in {group}: {', '.join(pins[group].keys())}")
+
+            self.mapping[group][node] = pin
 
 
 if __name__ == "__main__":
