@@ -4,7 +4,7 @@
 Generate a Quartus settings file to map FPGA pins for the Altera DE0-CV.
 """
 
-
+import argparse
 import configparser
 import re
 import sys
@@ -68,33 +68,37 @@ pins_cfg = configparser.ConfigParser()
 pins_cfg.read("pin_map.ini")
 pins = pins_cfg["pins"]
 
-# Load mapping file
-infile = sys.argv[1]
-mapper = configparser.ConfigParser()
-mapper.read(infile)
-mapping = mapper["mapping"]
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("in_file", help="Input file (see below for format notes)")
+    parser.add_argument("out_file", help="Output file. Will be clobbered if it exists.")
+    args = parser.parse_args()
 
-# Expand buses
-for node, pin in mapping.items():
-    try:
-        expanded = generate_bus(node, pin)
-        if expanded is not None:
-            del mapping[node]
-            for node_i, pin_i in expanded:
-                mapping[node_i] = pin_i
-    except ValueError as ve:
-        print(ve)
+    # Load mapping file
+    mapper = configparser.ConfigParser()
+    mapper.read(args.in_file)
+    mapping = mapper["mapping"]
 
-# Handle invalid mappings and expand buses
-for node, pin in mapping.items():
-    pin = pin.upper()
+    # Expand buses
+    for node, pin in mapping.items():
+        try:
+            expanded = generate_bus(node, pin)
+            if expanded is not None:
+                del mapping[node]
+                for node_i, pin_i in expanded:
+                    mapping[node_i] = pin_i
+        except ValueError as ve:
+            print(ve)
 
-    if pin in pins:
-        mapping[node] = pins[pin]
-    elif not is_pin_name(pin):
-        print(f"Skipping invalid pin name: {pin}")
-        del mapper["mapping"][node]
+    # Handle invalid mappings and expand buses
+    for node, pin in mapping.items():
+        pin = pin.upper()
 
-outfile = sys.argv[2]
-with open(outfile, "w") as fp:
-    quartus.dump(mapper["mapping"], fp)
+        if pin in pins:
+            mapping[node] = pins[pin]
+        elif not is_pin_name(pin):
+            print(f"Skipping invalid pin name: {pin}")
+            del mapper["mapping"][node]
+
+    with open(args.out_file, "w") as fp:
+        quartus.dump(mapper["mapping"], fp)
