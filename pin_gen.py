@@ -6,6 +6,9 @@ Generate a Quartus settings file to map FPGA pins for the Altera DE0-CV.
 
 import cmd
 import csv
+import os
+
+import quartus
 
 
 def yn(prompt):
@@ -152,6 +155,23 @@ class AssignLoop(cmd.Cmd):
             return
 
         self.mapping[group][node] = pin
+
+    def do_quit(self, _):
+        """Save pin assignments and quit."""
+        file = quartus.pick_qsf("Save mappings")
+        if file == "":
+            return
+        if os.path.exists(file):
+            mode = pick_one("awc", "File exists ", help="Append, overWrite, or Cancel")
+            if mode == "c":
+                return
+        else:
+            mode = "w"
+
+        with open(file, mode) as fp:
+            quartus.dump(self.mapping, fp)
+
+        return True
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ def dumps(mapping):
 
 def dump(mapping, fp):
     """Save the mapping to a qsf file (given an opened file)."""
-    fp.write(dumps(mapping))
+    fp.write(dumps(mapping) + "\n")
 
 
 def pick_qsf(prompt=""):
