@@ -6,14 +6,17 @@ map_template = "set_location_assignment {pin} -to {node}"
 
 
 def dumps(mapping):
-    return "\n".join(
-        map_template.format(pin=pin, node=node) for node, pin in mapping.items()
+    return (
+        "\n".join(
+            map_template.format(pin=pin, node=node) for node, pin in mapping.items()
+        )
+        + "\n"
     )
 
 
 def dump(mapping, fp):
     """Save the mapping to a qsf file (given an opened file)."""
-    fp.write(dumps(mapping) + "\n")
+    fp.write(dumps(mapping))
 
 
 def pick_qsf(prompt=""):

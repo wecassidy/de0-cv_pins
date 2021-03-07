@@ -63,6 +63,10 @@ def range_inclusive(start, stop):
         return range(start, stop - 1, -1)
 
 
+def warn(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+
 # Load pin dicts
 pins_cfg = configparser.ConfigParser()
 pins_cfg.read("pin_map.ini")
@@ -94,10 +98,9 @@ precedence.
 Buses
 -----
 
-Buses, written like abc[start..stop]def, are
-expanded to a series of individual pin assignments. If the node and
-pin buses have different sizes, the assignment is skipped with a
-printed error message.
+Buses, written like abc[start..stop]def, are expanded to a series of
+individual pin assignments. If the node and pin buses have different
+sizes, the assignment is skipped with a printed error message.
 
 Start and stop must both be non-negative integers. The range is
 inclusive; if stop > start then the assignment counts down.
@@ -139,7 +142,7 @@ the valid pins are kept.
                 for node_i, pin_i in expanded:
                     mapping[node_i] = pin_i
         except ValueError as ve:
-            print(ve)
+            warn(ve)
 
     # Handle invalid mappings and expand buses
     for node, pin in mapping.items():
@@ -148,8 +151,13 @@ the valid pins are kept.
         if pin in pins:
             mapping[node] = pins[pin]
         elif not is_pin_name(pin):
-            print(f"Skipping invalid pin name: {pin}")
-            del mapper["mapping"][node]
+            warn(f"Skipping invalid pin name: {pin}")
+            del mapping[node]
 
-    with open(args.out_file, "w") as fp:
-        quartus.dump(mapper["mapping"], fp)
+    out_file = mapper["options"].get("output", None)
+    out_file = args.output if args.output else out_file
+    if out_file is not None:
+        with open(out_file, "w") as fp:
+            quartus.dump(mapping, fp)
+    else:
+        print(quartus.dumps(mapping))
