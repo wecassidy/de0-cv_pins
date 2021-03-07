@@ -117,28 +117,9 @@ class AssignLoop(cmd.Cmd):
         """Map a node to an FPGA pin."""
         args = arg.split()
         if len(args) == 0:
-            node = input("Node: ")
-
-            pre_assignment = self.assignment_for(node)
-            if pre_assignment is not None:
-                if not yn(f"{node} is already assigned to {pre_assignment}. Overwrite"):
-                    return
-
-            group = self.choose_group()
-            pin = None
-            if group != "other":
-                while pin not in pins[group]:
-                    pin = input("Pin [?]: ")
-                    if pin == "?":
-                        print(f"Pins in {group}: {', '.join(pins[group].keys())}")
-            else:
-                while pin is None:
-                    pin = input("Pin [?]: ")
-                    if pin == "?":
-                        print(
-                            "Any pin number on the FPGA (caution: not checked for validity)"
-                        )
-                        pin = None
+            node, group, pin = self.interactive_map()
+            if node is None:
+                return
         elif len(args) == 2:
             node, pin = args
             for group in self.groups:
@@ -155,6 +136,32 @@ class AssignLoop(cmd.Cmd):
             return
 
         self.mapping[group][node] = pin
+
+    def interactive_map(self):
+        node = input("Node: ")
+
+        pre_assignment = self.assignment_for(node)
+        if pre_assignment is not None:
+            if not yn(f"{node} is already assigned to {pre_assignment}. Overwrite"):
+                return None, None, None
+
+        group = self.choose_group()
+        pin = None
+        if group != "other":
+            while pin not in pins[group]:
+                pin = input("Pin [?]: ")
+                if pin == "?":
+                    print(f"Pins in {group}: {', '.join(pins[group].keys())}")
+        else:
+            while pin is None:
+                pin = input("Pin [?]: ")
+                if pin == "?":
+                    print(
+                        "Any pin number on the FPGA (caution: not checked for validity)"
+                    )
+                    pin = None
+
+        return node, group, pin
 
     def do_quit(self, _):
         """Save pin assignments and quit."""
