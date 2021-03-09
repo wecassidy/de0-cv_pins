@@ -145,6 +145,7 @@ the valid pins are kept.
 
     # Load mapping file
     mapper = configparser.ConfigParser()
+    mapper.optionxform = lambda x: x
     mapper.read(args.in_file)
     mapping = mapper["mapping"]
     strict = args.strict or mapper.getboolean("options", "strict", fallback=False)
@@ -170,7 +171,7 @@ the valid pins are kept.
             warn(f"Skipping invalid pin name: {pin}", strict)
             del mapping[node]
 
-    out_file = mapper["options"].get("output", None)
+    out_file = mapper.get("options", "output", fallback=None)
     out_file = args.output if args.output else out_file
     if out_file is not None:
         with open(out_file, "w") as fp:
