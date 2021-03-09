@@ -1,0 +1,4 @@
+- Use [black](https://github.com/psf/black) to format the code before submitting a pull request
+- Variable names are generally in `snake_case` and constants are in `CAPITAL_SNAKE_CASE`
+- Remember the [Zen of Python](https://www.python.org/dev/peps/pep-0020/)
+- Use [good commit messages](https://chris.beams.io/posts/git-commit/#seven-rules): https://xkcd.com/1296/ is funny but not a guide to life
