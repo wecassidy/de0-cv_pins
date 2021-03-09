@@ -4,36 +4,46 @@ The pin planner is slow and hard to use. This script automatically
 generates Quartus settings files that assign the pins from a simple
 INI file.
 
-## Example use
+## Example
+Step 0: clone the repository
 
-Input file (`input.ini`):
+Suppose you want to make a 4-bit register on the DE0-CV in a Quartus project named "register". The project has three inputs named D (a four-line bus), CLK, and RST. There is one output Q, another 4-line bus. Planned connections:
+* D → SW0 through SW3
+* CLK → KEY0
+* RST → KEY1
+* Q → LEDR0 through LEDR3
+
+First write a file describing the mappings, named `pins.ini` (or whatever you want, the file name doesn't matter):
 ```ini
 [mapping]
-node = LEDR0
-switch = PIN_AA12
-display[0..6] = HEX3[0..6]
-
-[options]
-output = pins.qsf
+D[0..3] = SW[0..3]
+CLK = KEY0
+RST = KEY1
+Q[0..3] = LEDR[0..3]
+```
+The file is in INI format. The first line starts a section named `mapping`, and each line after that has the format `node name = pin assignment`. Notice how the D and Q buses are assigned; `D[0..3] = SW[0..3]` is equivalent to
+```ini
+D[0] = SW0
+D[1] = SW1
+D[2] = SW2
+D[3] = SW3
 ```
 
-Run as `python pin_gen.py input.ini`. Output file (`pins.qsf`):
+Next, use the script to generate a Quartus settings file containing the pin assignments: on the command line, run `python3 /path/to/script/pin_gen.py /path/to/pins.ini -o output.qsf`. This will generate a file named `output.qsf` containing the following:
 ```
-set_location_assignment PIN_AA2 -to node
-set_location_assignment PIN_AA12 -to switch
-set_location_assignment PIN_Y16 -to display[0]
-set_location_assignment PIN_W16 -to display[1]
-set_location_assignment PIN_Y17 -to display[2]
-set_location_assignment PIN_V16 -to display[3]
-set_location_assignment PIN_U17 -to display[4]
-set_location_assignment PIN_V18 -to display[5]
-set_location_assignment PIN_V19 -to display[6]
+set_location_assignment PIN_U7 -to CLK
+set_location_assignment PIN_W9 -to RST
+set_location_assignment PIN_U13 -to D[0]
+set_location_assignment PIN_V13 -to D[1]
+set_location_assignment PIN_T13 -to D[2]
+set_location_assignment PIN_T12 -to D[3]
+set_location_assignment PIN_AA2 -to Q[0]
+set_location_assignment PIN_AA1 -to Q[1]
+set_location_assignment PIN_W2 -to Q[2]
+set_location_assignment PIN_Y3 -to Q[3]
 ```
 
-To use the generated file in your Quartus project, add the line
-`source pins.qsf` to the project's top level settings file, probably
-named `projectname.qsf` ([Quartus
-documentation](https://www.intel.com/content/www/us/en/programmable/quartushelp/17.0/reference/glossary/def_qsf.htm)).
+Make sure `output.qsf` is in the project folder. Finally, add the line `source output.qsf` to the project's settings file (`register.qsf`) so that Quartus will use the generated pin assignments. I recommend deleting existing `set_location_assignment` lines in the project's `qsf` file to avoid accidental conflicts, then never touching the Pin Planner again.
 
 ## Command line syntax
 ```
@@ -52,8 +62,8 @@ optional arguments:
 ```
 
 ## Input file
-The input file is an INI file with two sections, `mapping` and
-`options`. See the [`configparser`
+The input file is an INI file with two sections, `mapping` (mandatory) and
+`options` (optional). See the [`configparser`
 docs](https://docs.python.org/3/library/configparser.html#supported-ini-file-structure)
 for more information about the file format.
 
