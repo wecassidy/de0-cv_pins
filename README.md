@@ -48,7 +48,8 @@ Make sure `output.qsf` is in the project folder. Finally, add the line `source o
 ## Command line syntax
 ```
 $ python pin_gen.py --help
-usage: pin_gen.py [-h] [-o OUTPUT] [-s] in_file
+usage: pin_gen.py [-h] [-o OUTPUT] [-s | --strict | --no-strict] [-f | --force | --no-force]
+                  in_file
 
 positional arguments:
   in_file               Input file (see below for format notes)
@@ -56,14 +57,17 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -o OUTPUT, --output OUTPUT
-                        Output file. Will be clobbered if it exists. If absent, print to stdout or output specified by in_file.
-  -s, --strict          Escalate warnings to errors
-
+                        Output file. Will be clobbered if it exists. If absent, print to
+                        stdout or output specified by in_file.
+  -s, --strict, --no-strict
+                        Escalate warnings to errors
+  -f, --force, --no-force
+                        Don't ask before overwriting existing files
 ```
 
 ## Input file
-The input file is an INI file with two sections, `mapping` (mandatory) and
-`options` (optional). See the [`configparser`
+The input file is an INI file with two sections, `mapping` (mandatory)
+and `options` (optional). See the [`configparser`
 docs](https://docs.python.org/3/library/configparser.html#supported-ini-file-structure)
 for more information about the file format.
 
