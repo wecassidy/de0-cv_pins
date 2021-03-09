@@ -70,6 +70,12 @@ def warn(message, strict, *args, **kwargs):
         sys.exit(1)
 
 
+def yn(prompt):
+    """Prompt a yes/no question, default no. Return True for yes."""
+    yn = input(f"{prompt} [y/N]? ")
+    return len(yn) > 0 and yn[0].lower() == "y"
+
+
 # Switch working dir to script location to load pin map
 cwd = os.getcwd()
 script_cwd = os.path.dirname(os.path.realpath(__file__))
@@ -174,7 +180,11 @@ the valid pins are kept.
     out_file = mapper.get("options", "output", fallback=None)
     out_file = args.output if args.output else out_file
     if out_file is not None:
-        with open(out_file, "w") as fp:
-            quartus.dump(mapping, fp)
+        overwrite = True
+        if os.path.exists(out_file):
+            overwrite = yn(f"{out_file} exists. Continue")
+        if overwrite:
+            with open(out_file, "w") as fp:
+                quartus.dump(mapping, fp)
     else:
         print(quartus.dumps(mapping))
