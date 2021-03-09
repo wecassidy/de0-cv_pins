@@ -7,13 +7,17 @@ INI file.
 ## Example
 Step 0: clone the repository
 
-Suppose you want to make a 4-bit register on the DE0-CV in a Quartus project named "register". The project has three inputs named D (a four-line bus), CLK, and RST. There is one output Q, another 4-line bus. Planned connections:
+Suppose you want to make a 4-bit register on the DE0-CV in a Quartus
+project named "register". The project has three inputs named D (a
+four-line bus), CLK, and RST. There is one output Q, another 4-line
+bus. Planned connections:
 * D → SW0 through SW3
 * CLK → KEY0
 * RST → KEY1
 * Q → LEDR0 through LEDR3
 
-First write a file describing the mappings, named `pins.ini` (or whatever you want, the file name doesn't matter):
+First write a file describing the mappings, named `pins.ini` (or
+whatever you want, the file name doesn't matter):
 ```ini
 [mapping]
 D[0..3] = SW[0..3]
@@ -21,7 +25,11 @@ CLK = KEY0
 RST = KEY1
 Q[0..3] = LEDR[0..3]
 ```
-The file is in INI format. The first line starts a section named `mapping`, and each line after that has the format `node name = pin assignment`. Notice how the D and Q buses are assigned; `D[0..3] = SW[0..3]` is equivalent to
+
+The file is in INI format. The first line starts a section named
+`mapping`, and each line after that has the format `node name = pin
+assignment`. Notice how the D and Q buses are assigned; `D[0..3] =
+SW[0..3]` is equivalent to
 ```ini
 D[0] = SW0
 D[1] = SW1
@@ -29,7 +37,10 @@ D[2] = SW2
 D[3] = SW3
 ```
 
-Next, use the script to generate a Quartus settings file containing the pin assignments: on the command line, run `python3 /path/to/script/pin_gen.py /path/to/pins.ini -o output.qsf`. This will generate a file named `output.qsf` containing the following:
+Next, use the script to generate a Quartus settings file containing
+the pin assignments: on the command line, run `python3
+/path/to/script/pin_gen.py /path/to/pins.ini -o output.qsf`. This will
+generate a file named `output.qsf` containing the following:
 ```
 set_location_assignment PIN_U7 -to CLK
 set_location_assignment PIN_W9 -to RST
@@ -43,7 +54,12 @@ set_location_assignment PIN_W2 -to Q[2]
 set_location_assignment PIN_Y3 -to Q[3]
 ```
 
-Make sure `output.qsf` is in the project folder. Finally, add the line `source output.qsf` to the project's settings file (`register.qsf`) so that Quartus will use the generated pin assignments. I recommend deleting existing `set_location_assignment` lines in the project's `qsf` file to avoid accidental conflicts, then never touching the Pin Planner again.
+Make sure `output.qsf` is in the project folder. Finally, add the line
+`source output.qsf` to the project's settings file (`register.qsf`) so
+that Quartus will use the generated pin assignments. I recommend
+deleting existing `set_location_assignment` lines in the project's
+`qsf` file to avoid accidental conflicts, then never touching the Pin
+Planner again.
 
 ## Command line syntax
 ```
@@ -78,7 +94,8 @@ skipped with a printed error message.
 
 Any command line flag can alternatively be given in the `options`
 section using the long name. If both are used, command line flags take
-precedence. Boolean options are given as `option = True/False`.
+precedence. Boolean options are given as `option = True/False` and
+default to False unless otherwise specified.
 
 
 ## Buses
