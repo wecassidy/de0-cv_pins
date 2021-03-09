@@ -145,16 +145,32 @@ the valid pins are kept.
         "or output specified by in_file.",
     )
     parser.add_argument(
-        "-s", "--strict", action="store_true", help="Escalate warnings to errors"
+        "-s",
+        "--strict",
+        action=argparse.BooleanOptionalAction,
+        help="Escalate warnings to errors",
+    )
+    parser.add_argument(
+        "-f",
+        "--force",
+        action=argparse.BooleanOptionalAction,
+        help="Don't ask before overwriting existing files",
     )
     args = parser.parse_args()
+    options = vars(args)
 
     # Load mapping file
     mapper = configparser.ConfigParser()
     mapper.optionxform = lambda x: x
     mapper.read(args.in_file)
     mapping = mapper["mapping"]
-    strict = args.strict or mapper.getboolean("options", "strict", fallback=False)
+
+    # Resolve options
+    boolean_options = ["strict", "force"]
+    for opt in boolean_options:
+        if options[opt] is None:
+            options[opt] = mapper.getboolean("options", opt, fallback=False)
+    strict = options["strict"]
 
     # Expand buses
     for node, pin in mapping.items():
@@ -181,7 +197,7 @@ the valid pins are kept.
     out_file = args.output if args.output else out_file
     if out_file is not None:
         overwrite = True
-        if os.path.exists(out_file):
+        if os.path.exists(out_file) and not options["force"]:
             overwrite = yn(f"{out_file} exists. Continue")
         if overwrite:
             with open(out_file, "w") as fp:
